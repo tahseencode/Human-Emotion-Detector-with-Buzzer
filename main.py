@@ -32,6 +32,7 @@ def main():
     frame_count = 0
     dominant_emotion = "neutral"
     emotion_valence = 0.0
+    last_ear = 0.0
 
     try:
         while True:
@@ -47,6 +48,7 @@ def main():
             lm_result = landmark_detector.process(rgb, w, h)
 
             if lm_result is not None:
+                last_ear = lm_result["ear"]
                 fatigue_scorer.update(
                     ear=lm_result["ear"],
                     eyes_closed=lm_result["eyes_closed"],
@@ -70,13 +72,13 @@ def main():
             alert_sound.set_active(alert_triggered or alert_engine.active)
 
             dashboard.update(
-                ear=lm_result["ear"],
+                ear=last_ear,
                 fatigue_score=fatigue_score,
                 dominant_emotion=dominant_emotion,
             )
 
             status_text = (
-                f"{dominant_emotion.upper()} | EAR:{lm_result['ear']:.2f} "
+                f"{dominant_emotion.upper()} | EAR:{last_ear:.2f} "
                 f"| Fatigue:{fatigue_score:.0f}"
             )
             color = (0, 0, 255) if alert_triggered or alert_engine.active else (0, 255, 0)
